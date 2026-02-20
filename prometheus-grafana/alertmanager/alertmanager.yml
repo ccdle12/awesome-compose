@@ -1,0 +1,43 @@
+global:
+  # The address of the SMTP server and port (e.g., Gmail, Outlook, dedicated server)
+  smtp_smarthost: 'smtp.titan.email:465' 
+
+  # The email address that the alerts will be sent FROM
+  smtp_from: 'chris.coverdale@advokate.vc'
+
+  # The username for authenticating with the SMTP server
+  smtp_auth_username: 'chris.coverdale@advokate.vc'
+                 
+  # The password or application-specific password for the SMTP user
+  smtp_auth_password: 'zbm2RFC-gnv7wcn0zxa'
+                 
+  # Most modern services require TLS
+  smtp_require_tls: true
+
+  # --- Routing ---
+  # The primary route definition. All alerts will match this route unless
+  # overridden by specific child routes.
+
+route:
+  # All alerts that hit this route will be sent to the 'default-email' receiver
+  receiver: 'default-email' 
+                               
+  # Alerts are grouped based on these labels before sending a single email.
+  group_by: ['alertname', 'instance']
+                                    
+  # How long to wait to collect new alerts for a group before sending the initial notification.
+  group_wait: 30s
+                                       
+  # The minimum interval between notifications for a group of alerts.
+  group_interval: 5m
+                                                    
+  # The minimum interval between repeat notifications for an alert.
+  repeat_interval: 4h
+  
+  # --- Receivers ---
+  # Defines what to do when a route matches a receiver.
+receivers:
+  - name: 'default-email'
+    email_configs:
+      # The target email address(es) that will receive the alerts
+      - to: 'chris.coverdale@advokate.vc' 

@@ -4,12 +4,17 @@ services:
     container_name: prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.external-url=https://chat.bitseek.ai/monitor/'
+      - '--web.route-prefix=/'
     ports:
       - 9090:9090
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./prometheus:/etc/prometheus
       - prom_data:/prometheus
+
   grafana:
     image: grafana/grafana
     container_name: grafana
@@ -19,7 +24,51 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=grafana
+      - GF_SERVER_ROOT_URL=https://chat.bitseek.ai/ui/
     volumes:
       - ./grafana:/etc/grafana/provisioning/datasources
+
+
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    container_name: nginx-exporter
+    network_mode: "host"
+    restart: unless-stopped
+    ports:
+      - 9113:9113
+    command:
+      - '-nginx.scrape-uri=https://127.0.0.1/nginx_status'
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  alertmanager:
+    image: prom/alertmanager:v0.25.0
+    container_name: alertmanager
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ./alertmanager/templates:/etc/alertmanager/templates:ro
+    ports:
+      - "9093:9093"
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+    restart: unless-stopped
+
+  dummy:
+   image: alpine:3.18
+   container_name: my_container
+   command: ["sh", "-c", "sleep 1d"]
+   restart: unless-stopped
+
 volumes:
   prom_data:

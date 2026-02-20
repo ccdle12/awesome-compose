@@ -1,0 +1,22 @@
+groups:
+- name: docker-container-rules
+  rules:
+  - alert: DockerContainerDown
+    # TODO: Replace my_container with container to monitor
+    expr: time() - container_last_seen{container_label_com_docker_compose_service="dummy"} > 15
+    for: 0
+    labels:
+      severity: critical
+    annotations:
+      summary: "Container my_container not seen on {{ $labels.instance }}"
+      description: "The container my_container has not been seen for >1m."
+
+        #- name: test_connectivity
+        #rules:
+        #- alert: AlertmanagerConnectionTest
+        #expr: vector(1)
+        #for: 1s # Fires almost immediately
+        #labels:
+        #severity: test
+        #annotations:
+        #summary: "Test to verify Prometheus can reach Alertmanager"
